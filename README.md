@@ -23,6 +23,7 @@ Pin          | Description |
 <a href="https://ibb.co/Vm0pbTk"><img src="https://i.ibb.co/tXwPnD1/Cattura.jpg" alt="Photoresistor schematic" border="0"></a>
 
 Please refer to the following image and to the datasheet of the component (<a href="https://www.analog.com/media/en/technical-documentation/data-sheets/TMP35_36_37.pdf">TMP36GZ</a>) to hook up the temperature sensor
+
 <a href="https://imgbb.com/"><img src="https://i.ibb.co/BcVt5BN/Untitled-Diagram.jpg" alt="Untitled-Diagram" border="0"></a>
 
 ### Requirements
