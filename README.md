@@ -14,15 +14,15 @@ plot the two signals.
 Pin          | Description |
 :-----------:|-------------|
 2.1          | Built-in LED
-2.5          | Analog Channel 0: Temperature sensor
-2.6          | Analog Channel 1: LDR (photoresistor) (*)
+2.5          | Analog Channel 0: Temperature sensor (\*)
+2.6          | Analog Channel 1: LDR (photoresistor) (\**)
 12.0         | I2C SCL
 12.1         | I2C SDA
 
 (*) See the connection scheme below to hook up the photoresistor (<a href="https://components101.com/asset/sites/default/files/component_datasheet/LDR%20Datasheet.pdf">Datasheet</a>)
-<a href="https://ibb.co/Vm0pbTk"><img src="https://i.ibb.co/tXwPnD1/Cattura.jpg" alt="Photoresistor schematic" border="0"></a>
+<a href="https://ibb.co/Vm0pbTk"><img src="https://i.ibb.co/tXwPnD1/Cattura.jpg" alt="Photoresistor schematic" width="70%" border="0"></a>
 
-Please refer to the following image and to the datasheet of the component (<a href="https://www.analog.com/media/en/technical-documentation/data-sheets/TMP35_36_37.pdf">TMP36GZ</a>) to hook up the temperature sensor
+(\**) Please refer to the following image and to the datasheet of the component (<a href="https://www.analog.com/media/en/technical-documentation/data-sheets/TMP35_36_37.pdf">TMP36GZ</a>) to hook up the temperature sensor
 
 <a href="https://imgbb.com/"><img src="https://i.ibb.co/BcVt5BN/Untitled-Diagram.jpg" alt="Untitled-Diagram" border="0"></a>
 
@@ -30,22 +30,64 @@ Please refer to the following image and to the datasheet of the component (<a hr
 The Project will have to meet the following requirements:
 - Sample two analog sensors using a single 16-bit Delta-Sigma ADC (hint: you can use the <a href="https://www.cypress.com/file/127201/download">Analog Mux</a> for this)
 - Each sample (of each channel) has to be the average of 5 consecutive samples buffered opportunely
-- Setup an I2C Slave (<a href="https://www.cypress.com/file/185396/download">EZI2C</a>) to send the averaged data for the 2 channels to the Bridge Control Panel. 
+- Set up an I2C Slave (<a href="https://www.cypress.com/file/185396/download">EZI2C</a>) to send the averaged data for the 2 channels to the Bridge Control Panel. 
   Configure the EZI2C component as follows: 100 kbps data rate, 1 address (0x08)
 - The required transmission data rate is 50 Hz
 - Set up a Timer with an ISR at the appropriate frequency to guarantee the data transmission rate (50 Hz) of the averaged data (5 samples)
-- Control the operation of the device (START: 0xFF, STOP: 0x00) writing the value of the Control Register of the I2C slave
+- Control the operation of the device writing the value of the Control Register of the I2C slave (refer to the table below)
 - Set up the I2C Slave buffer of the EZI2C according to the following table (set the WHO AM I to 0xBC)
+- Turn on the built-in LED when the status is equal to 0b11, and turn it off otherwise (refer to 
+the description of Control Register 1 for more info)
 
-I2C Slave Buffer Structure
+**I2C Slave Buffer Structure**
+
 Address      | Description   | R/W |
 :-----------:|---------------|:---:|
-0x00         | Control Reg   | R/W |
-0x01         | Who Am I      |  R  |
-0x02         | Ch0 Bit 15-8  |  R  |
-0x03         | Ch0 Bit 07-0  |  R  |
-0x04         | Ch1 Bit 15-8  |  R  |
-0x05         | Ch1 Bit 07-0  |  R  |
+0x00         | Control Reg 1 | R/W |
+0x01         | Control Reg 2 | R/W |
+0x02         | Who Am I      |  R  |
+0x03         | Ch0 Bit 15-8  |  R  |
+0x04         | Ch0 Bit 07-0  |  R  |
+0x05         | Ch1 Bit 15-8  |  R  |
+0x06         | Ch1 Bit 07-0  |  R  |
+
+
+**Control Register 0 Description** (Address 0x00)
+
+Bit    | Description           | R/W | Default |
+:-----:|-----------------------|:---:|:-------:|
+7      | *--reserved*          |  -  |    -    |
+6      | *--reserved*          |  -  |    -    |
+5      | Average samples bit 3 | R/W |    0    |
+4      | Average samples bit 2 | R/W |    0    |
+3      | Average samples bit 1 | R/W |    0    |
+2      | Average samples bit 0 | R/W |    0    |
+1      | Status bit 1          | R/W |    0    |
+0      | Status bit 0          | R/W |    0    |
+
+The `status` (bits 0 and 1) can be either set to `0b00` (device stopped), 
+`0b01` to sample the first channel (Ch0), `0b10` to sample the second channel
+(Ch1), and finally `0b11` to sample both channels.
+The register contains also the number of samples to be used for the 
+computation of the average. Set the value of bits 2-5 of the Control Register 0
+to meet the requirements of the project.
+
+
+**Control Register 1 Description** (Address 0x00)
+
+Bit    | Description           | R/W | Default |
+:-----:|-----------------------|:---:|:-------:|
+7-0    | Timer 1 Period Value  | R/W |    0    |
+
+The Control Register 1 contains the 8-bit period value of the Timer 
+used to generate the ISR required to sample the analog channels 
+using the Delta-Sigma ADC. Configure this register to meet the transmission
+data rate specified for this project.
+
+**Note**: mind that the required transmission data rate (50 Hz) may differ
+from the ISR frequency of the timer (because of the average computation). 
+You have to set up the ISR accordingly to guarantee the required transmission data rate.
+
 
 ### Setup and Assignment Delivery
 - One student from the team forks this repository 
