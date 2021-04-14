@@ -100,7 +100,7 @@ You have to set up the ISR accordingly to guarantee the required transmission da
 - Work on your project
 - In your Group folder, save the Bridge Control Panel configuration files (GROUP_XX.ini and GROUP_XX.iic) inside BRIDGE_CONTROL_PANEL_CONFIG_FILES folder  
 - The last commit must be named '*GROUP_XX* Final Delivery', where XX is the group number
-- One member of the team proposes a pull request before the deadline for the assignment, which is on **April 23 at 6PM**
+- One member of the team proposes a pull request before the deadline for the assignment, which is on **April 27 at 6PM**
 
 
 ### Evaluation
