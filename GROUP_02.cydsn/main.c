@@ -12,6 +12,7 @@
 #include "InterruptRoutines.h"
 #include "Logging.h"
 #include "project.h"
+#include "stdio.h"
 
 /**
 * \brief Size of data buffer for I2C slave device
@@ -34,12 +35,18 @@ int main(void)
     
     /* Start logging interface */
     Logging_Start();
+    /* UART initialization */
+    UART_Debug_Start();
     
     /* Start EZI2C Component */
     EZI2C_Start();
     
     /* Start MUX */
     AMux_Init();
+    
+    /* Start ADC */
+    ADC_DelSig_Start();
+    ADC_DelSig_StartConvert();
     
     /* Start timer and associated ISR */
     Timer_Count_Start();
@@ -61,7 +68,7 @@ int main(void)
     slaveBuffer[6] = LSB_Light;
     
     // Set up EZI2C buffer
-    EZI2C_SetBuffer1(SLAVE_BUFFER_SIZE, SLAVE_BUFFER_SIZE - 1 ,slaveBuffer);
+    EZI2C_SetBuffer1(SLAVE_BUFFER_SIZE, SLAVE_BUFFER_SIZE - 1, slaveBuffer);
 
     /* Place your initialization/startup code here (e.g. MyInst_Start()) */
 
@@ -79,6 +86,12 @@ int main(void)
             
             lightvalue /= ARRAY_LENGTH;
             tempvalue /= ARRAY_LENGTH;
+            
+            //Debug to see if ADC works properly
+            char message[30];
+            sprintf(message, "Temp value: %d\r\n", tempvalue);
+            UART_Debug_PutString(message);
+            
             //COunt 5 samples --> Send data via I2C
         }
     }
