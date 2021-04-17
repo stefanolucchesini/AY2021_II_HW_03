@@ -15,8 +15,8 @@
     
     #include <cytypes.h>
     
-    #define MUX_LIGHT 0
-    #define MUX_TEMP 1
+    #define MUX_TEMP 0
+    #define MUX_LIGHT 1
     #define ARRAY_LENGTH 5
     
     /**

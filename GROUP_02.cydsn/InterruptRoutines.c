@@ -12,6 +12,7 @@
 extern uint8_t slaveBuffer[];
 extern uint16_t Light_array[ARRAY_LENGTH];
 extern uint16_t Temp_array[ARRAY_LENGTH];
+extern uint8_t count;
 
 CY_ISR(Custom_Timer_Count_ISR)
 {
@@ -25,7 +26,8 @@ CY_ISR(Custom_Timer_Count_ISR)
     AMux_Select(MUX_TEMP);
     Temp_array[count] = ADC_DelSig_Read32();
     
-    //COunt 5 samples --> Send data via I2C
+    count++;
+    
 }
 
 /**
