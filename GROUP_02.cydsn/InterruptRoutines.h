@@ -25,6 +25,7 @@
     #define CH0 1
     #define CH1 2
     #define BOTH_CHANNELS 3
+    #define RWSIZE 2
     
     /**
     *   \brief ISR called on timer overflow

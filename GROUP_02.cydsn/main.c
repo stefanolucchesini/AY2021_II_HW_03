@@ -18,18 +18,19 @@
 * \brief Size of data buffer for I2C slave device
 */
 
-uint8_t slaveBuffer[SLAVE_BUFFER_SIZE]; ///< Buffer for the slave device
-uint8_t Ctrl_Reg_1 = 0;
-uint8_t Ctrl_Reg_2 = 0;
-uint8_t MSB_Light = 0, LSB_Light = 0;  //invalid values
-uint8_t MSB_Temp = 0, LSB_Temp = 0;    //invalid values
-uint16_t Light_array[ARRAY_LENGTH];
-uint16_t Temp_array[ARRAY_LENGTH];
-uint8_t count = 0;
-uint8_t samplenumber = 5;
 char message[30];
-uint8_t flag_send = 0;
-uint8_t status = 0;
+
+volatile uint8_t slaveBuffer[SLAVE_BUFFER_SIZE]; ///< Buffer for the slave device
+volatile uint8_t Ctrl_Reg_1 = 0;
+volatile uint8_t Ctrl_Reg_2 = 0;
+volatile uint8_t MSB_Light = 0, LSB_Light = 0;  //invalid values
+volatile uint8_t MSB_Temp = 0, LSB_Temp = 0;    //invalid values
+volatile uint16_t Light_array[ARRAY_LENGTH];
+volatile uint16_t Temp_array[ARRAY_LENGTH];
+volatile uint8_t count = 0;
+volatile uint8_t samplenumber = 5;
+volatile uint8_t flag_send = 0;
+volatile uint8_t status = 0;
 
 int main(void)
 {
@@ -67,7 +68,7 @@ int main(void)
     slaveBuffer[6] = LSB_Light;
     
     // Set up EZI2C buffer
-    EZI2C_SetBuffer1(SLAVE_BUFFER_SIZE, SLAVE_BUFFER_SIZE - 1, slaveBuffer);
+    EZI2C_SetBuffer1(SLAVE_BUFFER_SIZE, SLAVE_BUFFER_SIZE - 5, slaveBuffer);
     
         /* Start timer and associated ISR */
     Timer_Count_Start();
@@ -80,10 +81,9 @@ int main(void)
 
     for(;;)
     {      
-        if(flag_send){
-            flag_send = 0;
-            
-            switch (status){
+                if(flag_send){
+        flag_send=0;
+                switch (status){
                 case DEVICE_STOPPED:
                     break;
                 case CH0:
@@ -91,12 +91,22 @@ int main(void)
                     slaveBuffer[3] = MSB_Temp;
                     //Ch0 Bit 7-0
                     slaveBuffer[4] = LSB_Temp;
+                    //Ch1 Bit 15-8
+                    slaveBuffer[5] = 0;
+                    //Ch1 Bit 7-0
+                    slaveBuffer[6] = 0;
+                    Pin_LED_Write(0);
                     break;
                 case CH1:
+                    //Ch0 Bit 15-8
+                    slaveBuffer[3] = 0;
+                    //Ch0 Bit 7-0
+                    slaveBuffer[4] = 0;
                     //Ch1 Bit 15-8
                     slaveBuffer[5] = MSB_Light;
                     //Ch1 Bit 7-0
                     slaveBuffer[6] = LSB_Light;
+                    Pin_LED_Write(0);
                     break;
                 case BOTH_CHANNELS:
                     //Ch0 Bit 15-8
@@ -107,11 +117,32 @@ int main(void)
                     slaveBuffer[5] = MSB_Light;
                     //Ch1 Bit 7-0
                     slaveBuffer[6] = LSB_Light;
+                    Pin_LED_Write(1);
                     break;
+                default: break;    
             }
             
-            //Update I2C slave registers
-            EZI2C_SetBuffer1(SLAVE_BUFFER_SIZE, SLAVE_BUFFER_SIZE - 1, slaveBuffer);
+        } 
+        if(count >= samplenumber){
+        count = 0;
+        uint16_t lightvalue = 0, tempvalue = 0;
+        
+        //Average of values
+        for(int i = 0; i< samplenumber; i++){
+            lightvalue += Light_array[i];
+            tempvalue += Temp_array[i];
+        }
+        
+        lightvalue /= samplenumber;
+        tempvalue /= samplenumber;
+        
+        //Split light and temp values into MSB and LSB
+        MSB_Temp = (tempvalue & 0xFF00) >> 8;    
+        LSB_Temp = tempvalue & 0x00FF;
+        
+        MSB_Light = (lightvalue & 0xFF00) >> 8;    
+        LSB_Light = lightvalue & 0x00FF;
+        
         }
 
     }
