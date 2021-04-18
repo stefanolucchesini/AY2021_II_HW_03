@@ -17,12 +17,16 @@
     
     #define MUX_TEMP 0
     #define MUX_LIGHT 1
-    #define ARRAY_LENGTH 5
+    #define ARRAY_LENGTH 16
+    #define SLAVE_BUFFER_SIZE 7
+    #define WHO_AM_I 0xBC
+    #define MIN_ALLOWED_PERIOD 2
     
     /**
     *   \brief ISR called on timer overflow
     */
     CY_ISR_PROTO(Custom_Timer_Count_ISR);
+    CY_ISR_PROTO(Custom_Timer_Send_ISR);
     
  #endif
 /* [] END OF FILE */

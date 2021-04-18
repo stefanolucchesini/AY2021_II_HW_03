@@ -13,6 +13,7 @@ extern uint8_t slaveBuffer[];
 extern uint16_t Light_array[ARRAY_LENGTH];
 extern uint16_t Temp_array[ARRAY_LENGTH];
 extern uint8_t count;
+extern uint8_t samplenumber;
 
 CY_ISR(Custom_Timer_Count_ISR)
 {
@@ -30,12 +31,36 @@ CY_ISR(Custom_Timer_Count_ISR)
     
 }
 
+CY_ISR(Custom_Timer_Send_ISR)
+{
+    // Read timer status register to pull interrupt line low
+    Timer_Send_ReadStatusRegister();
+    
+    
+}
+
 /**
 *   This function is called when exiting the EZI2C_ISR. Here we
 *   perform all the tasks based on the requests.
 */
 void EZI2C_ISR_ExitCallback(void)
 {
+    //Average samples number extraction from register 1
+    uint8_t cnt1val = slaveBuffer[0];  
+    cnt1val &= 0b00111100;
+    cnt1val = (cnt1val >> 2);
+    samplenumber = cnt1val;  
+    
+    //Timer period update
+    if(slaveBuffer[1] == 0 || slaveBuffer[1] == 1) Timer_Count_WritePeriod(MIN_ALLOWED_PERIOD);
+    else Timer_Count_WritePeriod(slaveBuffer[1]);
+    
+    //Status bits update
+    
+    
+    
+    if(slaveBuffer[2] != WHO_AM_I) slaveBuffer[2] = WHO_AM_I;
+    EZI2C_SetBuffer1(SLAVE_BUFFER_SIZE, SLAVE_BUFFER_SIZE - 1, slaveBuffer);
     
 }
 /* [] END OF FILE */
