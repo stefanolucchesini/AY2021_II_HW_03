@@ -21,6 +21,10 @@
     #define SLAVE_BUFFER_SIZE 7
     #define WHO_AM_I 0xBC
     #define MIN_ALLOWED_PERIOD 2
+    #define DEVICE_STOPPED 0
+    #define CH0 1
+    #define CH1 2
+    #define BOTH_CHANNELS 3
     
     /**
     *   \brief ISR called on timer overflow

@@ -27,6 +27,9 @@ uint16_t Light_array[ARRAY_LENGTH];
 uint16_t Temp_array[ARRAY_LENGTH];
 uint8_t count = 0;
 uint8_t samplenumber = 5;
+char message[30];
+uint8_t flag_send = 0;
+uint8_t status = 0;
 
 int main(void)
 {
@@ -73,41 +76,44 @@ int main(void)
     //Start timer for updating registers at 50Hz
     Timer_Send_Start();
     isr_Send_StartEx(Custom_Timer_Send_ISR);
+    
 
     for(;;)
     {      
-      
-        if( count >= samplenumber){
-            count = 0;
-            uint16_t lightvalue = 0, tempvalue = 0;
-
-            for(int i = 0; i< samplenumber; i++){
-                lightvalue += Light_array[i];
-                tempvalue += Temp_array[i];
+        if(flag_send){
+            flag_send = 0;
+            
+            switch (status){
+                case DEVICE_STOPPED:
+                    break;
+                case CH0:
+                    //Ch0 Bit 15-8
+                    slaveBuffer[3] = MSB_Temp;
+                    //Ch0 Bit 7-0
+                    slaveBuffer[4] = LSB_Temp;
+                    break;
+                case CH1:
+                    //Ch1 Bit 15-8
+                    slaveBuffer[5] = MSB_Light;
+                    //Ch1 Bit 7-0
+                    slaveBuffer[6] = LSB_Light;
+                    break;
+                case BOTH_CHANNELS:
+                    //Ch0 Bit 15-8
+                    slaveBuffer[3] = MSB_Temp;
+                    //Ch0 Bit 7-0
+                    slaveBuffer[4] = LSB_Temp;
+                    //Ch1 Bit 15-8
+                    slaveBuffer[5] = MSB_Light;
+                    //Ch1 Bit 7-0
+                    slaveBuffer[6] = LSB_Light;
+                    break;
             }
             
-            lightvalue /= samplenumber;
-            tempvalue /= samplenumber;
-            
-            //Debug to see if ADC works properly
-            char message[30];
-            sprintf(message, "Temp value: %x\r\n", tempvalue);
-            UART_Debug_PutString(message);
-            sprintf(message, "Light value: %x\r\n", lightvalue);
-            UART_Debug_PutString(message);
-            
-            //Split light and temp values into MSB and LSB
-            MSB_Temp = (tempvalue & 0xFF00) >> 8;    
-            LSB_Temp = tempvalue & 0x00FF;
-            sprintf(message, "Binary TEMPERATURE MSB: %x LSB: %x\r\n",MSB_Temp,LSB_Temp);
-            UART_Debug_PutString(message);
-            
-            MSB_Light = (lightvalue & 0xFF00) >> 8;    
-            LSB_Light = lightvalue & 0x00FF;
-            sprintf(message, "Binary LIGHT MSB: %x LSB: %x\r\n",MSB_Light,LSB_Light);
-            UART_Debug_PutString(message);
-            
+            //Update I2C slave registers
+            EZI2C_SetBuffer1(SLAVE_BUFFER_SIZE, SLAVE_BUFFER_SIZE - 1, slaveBuffer);
         }
+
     }
 }
 
