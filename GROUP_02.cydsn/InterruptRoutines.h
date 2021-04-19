@@ -17,7 +17,7 @@
     
     #define MUX_TEMP 0
     #define MUX_LIGHT 1
-    #define ARRAY_LENGTH 16
+    #define ARRAY_LENGTH 15
     #define SLAVE_BUFFER_SIZE 7
     #define WHO_AM_I 0xBC
     #define MIN_ALLOWED_PERIOD 2

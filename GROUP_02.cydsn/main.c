@@ -10,7 +10,6 @@
  * ========================================
 */
 #include "InterruptRoutines.h"
-#include "Logging.h"
 #include "project.h"
 #include "stdio.h"
 
@@ -36,8 +35,6 @@ int main(void)
 {
     CyGlobalIntEnable; /* Enable global interrupts. */
     
-    /* Start logging interface */
-    Logging_Start();
     /* UART initialization */
     UART_Debug_Start();
     
@@ -81,12 +78,11 @@ int main(void)
 
     for(;;)
     {
-        sprintf(message, "Timer period: %d\r\n", Timer_Count_ReadPeriod());
+        sprintf(message,"Status: %d\r\n",status);
         UART_Debug_PutString(message);
         if(count >= samplenumber){
         count = 0;
         uint16_t lightvalue = 0, tempvalue = 0;
-        
         //Average of values
         for(int i = 0; i< samplenumber; i++){
             lightvalue += Light_array[i];
@@ -108,6 +104,7 @@ int main(void)
         flag_send=0;
         switch (status){
         case DEVICE_STOPPED:
+            Pin_LED_Write(LED_OFF); //Control LED
             break;
         case CH0:
             //Ch0 Bit 15-8
@@ -141,8 +138,7 @@ int main(void)
             //Ch1 Bit 7-0
             slaveBuffer[6] = LSB_Light;
             Pin_LED_Write(LED_ON); //Control LED
-            break;
-        default: break;    
+            break;    
             }
           
         } 

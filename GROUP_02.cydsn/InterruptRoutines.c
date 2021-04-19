@@ -33,7 +33,7 @@ CY_ISR(Custom_Timer_Count_ISR)
     Temp_array[count] = ADC_DelSig_Read32();
     
     count++;
-    //count = (count > 15) ? 0 : count;
+    count = (count > ARRAY_LENGTH-1) ? 0 : count; //memory protection
 
 }
 
@@ -65,7 +65,7 @@ void EZI2C_ISR_ExitCallback(void)
         
     
     //Timer period update
-    if(Ctrl_Reg_2 != 0 && Ctrl_Reg_2 != 1) Timer_Count_WritePeriod(Ctrl_Reg_2);
+    if(Ctrl_Reg_2 != 0 && Ctrl_Reg_2 != 1 && Ctrl_Reg_2 != 2) Timer_Count_WritePeriod(Ctrl_Reg_2);
     //Values 0 and 1 are not allowed (no modification of timer period)
 
     
