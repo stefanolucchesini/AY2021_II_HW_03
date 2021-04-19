@@ -26,6 +26,9 @@
     #define CH1 2
     #define BOTH_CHANNELS 3
     #define RWSIZE 2
+    #define LED_ON 1
+    #define LED_OFF 0
+    #define DEFAULT_TIM_PERIOD 51
     
     /**
     *   \brief ISR called on timer overflow

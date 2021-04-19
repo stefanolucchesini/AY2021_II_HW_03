@@ -20,6 +20,7 @@ extern volatile uint8_t flag_send;
 extern volatile uint8_t status;
 extern volatile uint8_t Ctrl_Reg_1;
 extern volatile uint8_t Ctrl_Reg_2;
+uint8_t old_timer_period = DEFAULT_TIM_PERIOD;
 
 CY_ISR(Custom_Timer_Count_ISR)
 {
@@ -32,7 +33,7 @@ CY_ISR(Custom_Timer_Count_ISR)
     Temp_array[count] = ADC_DelSig_Read32();
     
     count++;
-    count = (count > 14) ? 0 : count;
+    //count = (count > 15) ? 0 : count;
 
 }
 
@@ -60,13 +61,13 @@ void EZI2C_ISR_ExitCallback(void)
     //Average samples number extraction from register 1
     cnt1val &= 0b00111100;
     cnt1val = (cnt1val >> 2);
-    //samplenumber = cnt1val;  
+    if(cnt1val!=0) samplenumber = cnt1val;  
         
     
     //Timer period update
-    //if(Ctrl_Reg_2 == 0 || Ctrl_Reg_2 == 1) Timer_Count_WritePeriod(MIN_ALLOWED_PERIOD);
-    //else Timer_Count_WritePeriod(Ctrl_Reg_2);
-  
+    if(Ctrl_Reg_2 != 0 && Ctrl_Reg_2 != 1) Timer_Count_WritePeriod(Ctrl_Reg_2);
+    //Values 0 and 1 are not allowed (no modification of timer period)
+
     
 }
 /* [] END OF FILE */

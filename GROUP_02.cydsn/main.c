@@ -68,7 +68,7 @@ int main(void)
     slaveBuffer[6] = LSB_Light;
     
     // Set up EZI2C buffer
-    EZI2C_SetBuffer1(SLAVE_BUFFER_SIZE, SLAVE_BUFFER_SIZE - 5, slaveBuffer);
+    EZI2C_SetBuffer1(SLAVE_BUFFER_SIZE, RWSIZE, slaveBuffer);
     
         /* Start timer and associated ISR */
     Timer_Count_Start();
@@ -80,49 +80,9 @@ int main(void)
     
 
     for(;;)
-    {      
-                if(flag_send){
-        flag_send=0;
-                switch (status){
-                case DEVICE_STOPPED:
-                    break;
-                case CH0:
-                    //Ch0 Bit 15-8
-                    slaveBuffer[3] = MSB_Temp;
-                    //Ch0 Bit 7-0
-                    slaveBuffer[4] = LSB_Temp;
-                    //Ch1 Bit 15-8
-                    slaveBuffer[5] = 0;
-                    //Ch1 Bit 7-0
-                    slaveBuffer[6] = 0;
-                    Pin_LED_Write(0);
-                    break;
-                case CH1:
-                    //Ch0 Bit 15-8
-                    slaveBuffer[3] = 0;
-                    //Ch0 Bit 7-0
-                    slaveBuffer[4] = 0;
-                    //Ch1 Bit 15-8
-                    slaveBuffer[5] = MSB_Light;
-                    //Ch1 Bit 7-0
-                    slaveBuffer[6] = LSB_Light;
-                    Pin_LED_Write(0);
-                    break;
-                case BOTH_CHANNELS:
-                    //Ch0 Bit 15-8
-                    slaveBuffer[3] = MSB_Temp;
-                    //Ch0 Bit 7-0
-                    slaveBuffer[4] = LSB_Temp;
-                    //Ch1 Bit 15-8
-                    slaveBuffer[5] = MSB_Light;
-                    //Ch1 Bit 7-0
-                    slaveBuffer[6] = LSB_Light;
-                    Pin_LED_Write(1);
-                    break;
-                default: break;    
-            }
-            
-        } 
+    {
+        sprintf(message, "Timer period: %d\r\n", Timer_Count_ReadPeriod());
+        UART_Debug_PutString(message);
         if(count >= samplenumber){
         count = 0;
         uint16_t lightvalue = 0, tempvalue = 0;
@@ -132,7 +92,6 @@ int main(void)
             lightvalue += Light_array[i];
             tempvalue += Temp_array[i];
         }
-        
         lightvalue /= samplenumber;
         tempvalue /= samplenumber;
         
@@ -142,8 +101,51 @@ int main(void)
         
         MSB_Light = (lightvalue & 0xFF00) >> 8;    
         LSB_Light = lightvalue & 0x00FF;
-        
         }
+        
+        //Update slave registers
+        if(flag_send){
+        flag_send=0;
+        switch (status){
+        case DEVICE_STOPPED:
+            break;
+        case CH0:
+            //Ch0 Bit 15-8
+            slaveBuffer[3] = MSB_Temp;
+            //Ch0 Bit 7-0
+            slaveBuffer[4] = LSB_Temp;
+            //Ch1 Bit 15-8
+            slaveBuffer[5] = 0;
+            //Ch1 Bit 7-0
+            slaveBuffer[6] = 0;
+            Pin_LED_Write(LED_OFF); //Control LED
+            break;
+        case CH1:
+            //Ch0 Bit 15-8
+            slaveBuffer[3] = 0;
+            //Ch0 Bit 7-0
+            slaveBuffer[4] = 0;
+            //Ch1 Bit 15-8
+            slaveBuffer[5] = MSB_Light;
+            //Ch1 Bit 7-0
+            slaveBuffer[6] = LSB_Light;
+            Pin_LED_Write(LED_OFF); //Control LED
+            break;
+        case BOTH_CHANNELS:
+            //Ch0 Bit 15-8
+            slaveBuffer[3] = MSB_Temp;
+            //Ch0 Bit 7-0
+            slaveBuffer[4] = LSB_Temp;
+            //Ch1 Bit 15-8
+            slaveBuffer[5] = MSB_Light;
+            //Ch1 Bit 7-0
+            slaveBuffer[6] = LSB_Light;
+            Pin_LED_Write(LED_ON); //Control LED
+            break;
+        default: break;    
+            }
+          
+        } 
 
     }
 }
