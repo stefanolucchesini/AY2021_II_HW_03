@@ -17,7 +17,7 @@
 * \brief Size of data buffer for I2C slave device
 */
 
-char message[30];
+char message[50];
 
 volatile uint8_t slaveBuffer[SLAVE_BUFFER_SIZE]; ///< Buffer for the slave device
 volatile uint8_t Ctrl_Reg_1 = 0;
@@ -78,25 +78,24 @@ int main(void)
 
     for(;;)
     {
-        sprintf(message,"Status: %d\r\n",status);
-        UART_Debug_PutString(message);
+     
         if(count >= samplenumber){
         count = 0;
         uint16_t lightvalue = 0, tempvalue = 0;
         //Average of values
-        for(int i = 0; i< samplenumber; i++){
-            lightvalue += Light_array[i];
-            tempvalue += Temp_array[i];
+        for(int i = 0; i < samplenumber; i++){
+            lightvalue += Light_array[i]/samplenumber;
+            tempvalue += Temp_array[i]/samplenumber;
         }
-        lightvalue /= samplenumber;
-        tempvalue /= samplenumber;
+ 
         
         //Split light and temp values into MSB and LSB
-        MSB_Temp = (tempvalue & 0xFF00) >> 8;    
-        LSB_Temp = tempvalue & 0x00FF;
+        LSB_Temp = tempvalue;
+        MSB_Temp = tempvalue >> 8;    
         
-        MSB_Light = (lightvalue & 0xFF00) >> 8;    
-        LSB_Light = lightvalue & 0x00FF;
+        LSB_Light = lightvalue;
+        MSB_Light = lightvalue >> 8;    
+        
         }
         
         //Update slave registers

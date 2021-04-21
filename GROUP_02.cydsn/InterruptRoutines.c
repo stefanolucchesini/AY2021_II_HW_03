@@ -7,6 +7,7 @@
 #include "InterruptRoutines.h" 
 #include "Timer_Count.h"
 #include "project.h"
+#include "stdio.h"
 
 // Our global variables
 extern volatile uint8_t slaveBuffer[];
@@ -26,11 +27,16 @@ CY_ISR(Custom_Timer_Count_ISR)
 {
     // Read timer status register to pull interrupt line low
     Timer_Count_ReadStatusRegister();
-    AMux_Select(MUX_LIGHT);
-    Light_array[count] = ADC_DelSig_Read32();
     
     AMux_Select(MUX_TEMP);
     Temp_array[count] = ADC_DelSig_Read32();
+    if(Temp_array[count]<0) Temp_array[count] = 0;
+    if(Temp_array[count]>65535) Temp_array[count] = 65535;
+    
+    AMux_Select(MUX_LIGHT);
+    Light_array[count] = ADC_DelSig_Read32();
+    if(Light_array[count]<0) Light_array[count] = 0;
+    if(Light_array[count]>65535) Light_array[count] = 65535;
     
     count++;
     count = (count > ARRAY_LENGTH-1) ? 0 : count; //memory protection
