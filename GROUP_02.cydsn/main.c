@@ -1,35 +1,30 @@
-/* ========================================
- *
- * Copyright YOUR COMPANY, THE YEAR
- * All Rights Reserved
- * UNPUBLISHED, LICENSED SOFTWARE.
- *
- * CONFIDENTIAL AND PROPRIETARY INFORMATION
- * WHICH IS THE PROPERTY OF your company.
- *
- * ========================================
+/**
+* \file main.c
+*
+* \brief Source file for our application
+*
+* This the main source file
+*
+* \authors Stefano Lucchesini, Giovanni Marelli
+* \date April 2020
 */
+
 #include "InterruptRoutines.h"
 #include "project.h"
 #include "stdio.h"
 
-/**
-* \brief Size of data buffer for I2C slave device
-*/
-
-char message[50];
-
-volatile uint8_t slaveBuffer[SLAVE_BUFFER_SIZE]; ///< Buffer for the slave device
+// Our global variables
+volatile uint8_t slaveBuffer[SLAVE_BUFFER_SIZE]; // Buffer for the slave device
 volatile uint8_t Ctrl_Reg_1 = 0;
 volatile uint8_t Ctrl_Reg_2 = 0;
-volatile uint8_t MSB_Light = 0, LSB_Light = 0;  //invalid values
-volatile uint8_t MSB_Temp = 0, LSB_Temp = 0;    //invalid values
-volatile uint16_t Light_array[ARRAY_LENGTH];
-volatile uint16_t Temp_array[ARRAY_LENGTH];
+volatile uint8_t MSB_Light = 0, LSB_Light = 0; //Most and least significant bytes
+volatile uint8_t MSB_Temp = 0, LSB_Temp = 0; //Most and least significant bytes
+volatile uint16_t Light_array[ARRAY_LENGTH]; //Array for ADC readings
+volatile uint16_t Temp_array[ARRAY_LENGTH]; //Array for ADC readings
 volatile uint8_t count = 0;
-volatile uint8_t samplenumber = 5;
+volatile uint8_t samplenumber = DEFAULT_SAMPLE_NUMBER;
 volatile uint8_t flag_send = 0;
-volatile uint8_t status = 0;
+volatile uint8_t status = DEVICE_STOPPED;
 
 int main(void)
 {
@@ -49,7 +44,6 @@ int main(void)
     ADC_DelSig_StartConvert();
     
     // Set up Slave Buffer
-    
     //Control registers default values
     slaveBuffer[0] = Ctrl_Reg_1;
     slaveBuffer[1] = Ctrl_Reg_2;
@@ -67,7 +61,7 @@ int main(void)
     // Set up EZI2C buffer
     EZI2C_SetBuffer1(SLAVE_BUFFER_SIZE, RWSIZE, slaveBuffer);
     
-        /* Start timer and associated ISR */
+    /* Start timer and associated ISR */
     Timer_Count_Start();
     isr_Count_StartEx(Custom_Timer_Count_ISR);
     
@@ -78,7 +72,7 @@ int main(void)
 
     for(;;)
     {
-     
+    
         if(count >= samplenumber){
         count = 0;
         uint16_t lightvalue = 0, tempvalue = 0;
@@ -88,14 +82,12 @@ int main(void)
             tempvalue += Temp_array[i]/samplenumber;
         }
  
-        
         //Split light and temp values into MSB and LSB
         LSB_Temp = tempvalue;
         MSB_Temp = tempvalue >> 8;    
         
         LSB_Light = lightvalue;
         MSB_Light = lightvalue >> 8;    
-        
         }
         
         //Update slave registers
@@ -103,6 +95,14 @@ int main(void)
         flag_send=0;
         switch (status){
         case DEVICE_STOPPED:
+            //Ch0 Bit 15-8
+            slaveBuffer[3] = 0;
+            //Ch0 Bit 7-0
+            slaveBuffer[4] = 0;
+            //Ch1 Bit 15-8
+            slaveBuffer[5] = 0;
+            //Ch1 Bit 7-0
+            slaveBuffer[6] = 0;
             Pin_LED_Write(LED_OFF); //Control LED
             break;
         case CH0:
@@ -139,9 +139,7 @@ int main(void)
             Pin_LED_Write(LED_ON); //Control LED
             break;    
             }
-          
-        } 
-
+        }
     }
 }
 

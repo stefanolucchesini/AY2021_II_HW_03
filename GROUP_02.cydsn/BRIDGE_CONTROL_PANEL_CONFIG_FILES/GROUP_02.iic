@@ -1,0 +1,13 @@
+;Configure number of average samples to 5, set status as 0b11
+w 08 00 17 p
+;Configure Timer Period to 51 (slightly less than 4ms)
+w 08 01 33 p
+;Read the channels (Repeat with scan period 20ms)
+w 08 3 p
+r 08 @1temp p
+w 08 4 p
+r 08 @0temp p
+w 08 5 p
+r 08 @1light p
+w 08 6 p
+r 08 @0light p
