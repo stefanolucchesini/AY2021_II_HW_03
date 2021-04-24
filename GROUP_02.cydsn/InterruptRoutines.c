@@ -42,13 +42,9 @@ CY_ISR(Custom_Timer_Count_ISR)
     //Read Channel 0
     AMux_Select(MUX_TEMP);
     Temp_array[count] = ADC_DelSig_Read32();
-    if(Temp_array[count]<0) Temp_array[count] = 0;
-    if(Temp_array[count]>65535) Temp_array[count] = 65535;
     //Read Channel 1
     AMux_Select(MUX_LIGHT);
     Light_array[count] = ADC_DelSig_Read32();
-    if(Light_array[count]<0) Light_array[count] = 0;
-    if(Light_array[count]>65535) Light_array[count] = 65535;
     
     count++;
     //Avoid to write outside array size

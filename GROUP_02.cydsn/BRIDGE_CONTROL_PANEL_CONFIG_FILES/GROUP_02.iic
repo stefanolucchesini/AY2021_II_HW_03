@@ -1,13 +1,25 @@
+;Read control registers 1 and 2 to see default values (all 0)
+w 08 00 p
+r 08 x p
+w 08 01 p
+r 08 x p
 ;Configure number of average samples to 5, set status as 0b11
+;If you want to change the content of control register 1 (address 0x00)
+;put the value you want in place of '17'.
 w 08 00 17 p
 ;Configure Timer Period to 51 (slightly less than 4ms)
+;If you want to change the content of control register 2 (address 0x01)
+;put the value you want in place of '33'. 
+;In order to have the desired number of samples equally distributed in time and 
+;averaged in such a way to have a new datum every 20ms (50Hz) you may refer to 
+;the table "Timer_Count_ISR_Conversion_Table.png" in the configuration folder
 w 08 01 33 p
 ;Read the channels (Repeat with scan period 20ms)
-w 08 3 p
+w 08 03 p
 r 08 @1temp p
-w 08 4 p
+w 08 04 p
 r 08 @0temp p
-w 08 5 p
+w 08 05 p
 r 08 @1light p
-w 08 6 p
+w 08 06 p
 r 08 @0light p
