@@ -23,7 +23,6 @@ volatile uint16_t Light_array[ARRAY_LENGTH]; //Array for ADC readings
 volatile uint16_t Temp_array[ARRAY_LENGTH]; //Array for ADC readings
 volatile uint8_t count = 0;
 volatile uint8_t samplenumber = DEFAULT_SAMPLE_NUMBER;
-volatile uint8_t flag_send = 0;
 volatile uint8_t status = DEVICE_STOPPED;
 
 int main(void)
@@ -65,11 +64,6 @@ int main(void)
     Timer_Count_Start();
     isr_Count_StartEx(Custom_Timer_Count_ISR);
     
-    //Start timer for updating registers at 50Hz
-    Timer_Send_Start();
-    isr_Send_StartEx(Custom_Timer_Send_ISR);
-    
-
     for(;;)
     {
     
@@ -88,11 +82,9 @@ int main(void)
         
         LSB_Light = lightvalue;
         MSB_Light = lightvalue >> 8;    
-        }
+       
         
         //Update slave registers
-        if(flag_send){
-        flag_send=0;
         switch (status){
         case DEVICE_STOPPED:
             //Ch0 Bit 15-8

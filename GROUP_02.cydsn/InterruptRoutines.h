@@ -29,13 +29,12 @@
     #define RWSIZE 2
     #define LED_ON 1
     #define LED_OFF 0
-    #define DEFAULT_TIM_PERIOD 51
+    #define DEFAULT_TIM_PERIOD 40
     
     /**
     *   \brief ISR called on timers overflow
     */
     CY_ISR_PROTO(Custom_Timer_Count_ISR);
-    CY_ISR_PROTO(Custom_Timer_Send_ISR);
     
  #endif
 /* [] END OF FILE */

@@ -24,7 +24,6 @@ extern volatile uint8_t count;
 extern volatile uint8_t samplenumber;
 extern volatile uint8_t MSB_Light, LSB_Light;
 extern volatile uint8_t MSB_Temp, LSB_Temp;
-extern volatile uint8_t flag_send;
 extern volatile uint8_t status;
 extern volatile uint8_t Ctrl_Reg_1;
 extern volatile uint8_t Ctrl_Reg_2;
@@ -48,20 +47,7 @@ CY_ISR(Custom_Timer_Count_ISR)
     
     count++;
     //Avoid to write outside array size
-    count = (count > ARRAY_LENGTH-1) ? 0 : count;
-}
-
-/*
-*   This function is called @50 Hz. Here we
-*   raise the flag to update slave registers in main.c
-*/
-CY_ISR(Custom_Timer_Send_ISR)
-{
-    // Read timer status register to pull interrupt line low
-    Timer_Send_ReadStatusRegister();
-    
-    //Raise flag to send data via I2C
-    flag_send = 1;
+    count = (count > ARRAY_LENGTH) ? 0 : count;
 }
 
 /*

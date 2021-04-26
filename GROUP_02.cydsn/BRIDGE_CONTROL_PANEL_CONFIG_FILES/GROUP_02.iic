@@ -3,17 +3,19 @@ w 08 00 p
 r 08 x p
 w 08 01 p
 r 08 x p
+w 08 02 p  ;WHO AM I Register read
+r 08 x p
 ;Configure number of average samples to 5, set status as 0b11
 ;If you want to change the content of control register 1 (address 0x00)
 ;put the value you want in place of '17'.
 w 08 00 17 p
-;Configure Timer Period to 51 (slightly less than 4ms)
+;Configure Timer Period to 40(0x27)-corresponding to 4ms.
 ;If you want to change the content of control register 2 (address 0x01)
-;put the value you want in place of '33'. 
+;put the value you want in place of '27'. 
 ;In order to have the desired number of samples equally distributed in time and 
-;averaged in such a way to have a new datum every 20ms (50Hz) you may refer to 
+;averaged in such a way to have a new datum around every 20ms (50Hz) you may refer to 
 ;the table "Timer_Count_ISR_Conversion_Table.png" in the configuration folder
-w 08 01 33 p
+w 08 01 27 p
 ;Read the channels (Repeat with scan period 20ms)
 w 08 03 p
 r 08 @1temp p
